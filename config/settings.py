@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "django.forms",
     "accounts",
     "core",
+    "suppliers",
     "quality",
     "catalog",
     "sampling",

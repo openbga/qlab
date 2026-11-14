@@ -38,7 +38,7 @@ e2e = [
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings"
 python_files = ["test_*.py"]
-testpaths = ["tests", "accounts/tests", "catalog/tests", "sampling/tests", "analytical/tests", "laboratory/tests", "stability/tests", "reporting/tests", "pagedocs/tests"]
+testpaths = ["tests", "accounts/tests", "catalog/tests", "suppliers/tests", "sampling/tests", "analytical/tests", "laboratory/tests", "stability/tests", "reporting/tests", "pagedocs/tests"]
 
 
 [tool.ruff]

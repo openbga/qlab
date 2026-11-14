@@ -22,6 +22,7 @@ from quality.services import receive_lot
 from sampling import services
 from sampling.models import LotAssignment, SamplingPlanRevision, SamplingRecord
 from sampling.services import containers_required, current_requirements
+from tests.receipts import on_site_receipt
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -62,6 +63,7 @@ def ready(people):
         material=mat.name,
         rules=rules,
         reason="Synthetic receipt",
+        receipt=on_site_receipt(),
     )
     return {"material": mat, "spec": spec, "plan": plan, "rules": rules, "lot": lot}
 
@@ -182,6 +184,7 @@ def test_missing_sampling_plan_is_a_hold(people):
         material=mat.name,
         rules=approved_rules(people["author"]),
         reason="Synthetic receipt",
+        receipt=on_site_receipt(),
     )
     held = services.assign_requirements(
         actor=people["analyst"], lot=lot, material=mat, stage="incoming", reason="Assign"

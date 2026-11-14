@@ -6,6 +6,35 @@
 <dl class="row"><dt class="col-sm-3">Material</dt><dd class="col-sm-9">{{ lot.material }}</dd><dt class="col-sm-3">Status</dt><dd class="col-sm-9">{{ lot.state|capfirst }}</dd><dt class="col-sm-3">Rule set</dt><dd class="col-sm-9">{{ lot.rules }}</dd><dt class="col-sm-3">Record revision</dt><dd class="col-sm-9">{{ lot.revision }}</dd></dl>
 {% if lot.state == 'quarantine' %}<div class="d-flex gap-2 mb-4">{% if can_record %}<a class="btn btn-primary" href="{% url 'quality:sample_new' lot.pk %}">Add sample</a>{% endif %}{% if can_dispose %}<a class="btn btn-outline-secondary" href="{% url 'quality:disposition' lot.pk %}">Review disposition</a>{% endif %}</div>{% endif %}
 <p><a href="{% url 'sampling:lot' lot.pk %}">Requirements and sampling</a> · {% if assignment %}{{ assignment.get_status_display }}{% else %}Not assigned{% endif %} · <a href="{% url 'analytical:lot_testing' lot.pk %}">Testing and investigations</a></p>
+<section class="card mb-4" aria-labelledby="receipt-heading">
+  <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <h2 class="card-title mb-0" id="receipt-heading">Receipt</h2>
+    {% if can_record and lot.state == 'quarantine' %}{% if receipt %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'quality:receipt_correct' lot.pk %}">Correct receipt details</a>{% else %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'quality:receipt_new' lot.pk %}">Record receipt details</a>{% endif %}{% endif %}
+  </div>
+  <div class="card-body">
+    {% if receipt %}
+    <dl class="vr-facts">
+      <div><dt>Source</dt><dd>{{ receipt.get_source_display }}</dd></div>
+      {% if receipt.supplier %}<div><dt>Supplier</dt><dd><a href="{% url 'suppliers:detail' receipt.supplier_id %}">{{ receipt.supplier.code }}</a> · {{ receipt.supplier.name }}, {{ receipt.supplier.location }}</dd></div>
+      <div><dt>Supplier lot number</dt><dd>{{ receipt.supplier_lot|default:"Not known" }}</dd></div>
+      <div><dt>Manufacturer</dt><dd>{% if receipt.manufacturer %}{{ receipt.manufacturer }}{% if receipt.manufacturer_location %}, {{ receipt.manufacturer_location }}{% endif %}{% else %}Not stated{% endif %}</dd></div>
+      {% if receipt.manufacturer_lot %}<div><dt>Manufacturer lot number</dt><dd>{{ receipt.manufacturer_lot }}</dd></div>{% endif %}{% endif %}
+      <div><dt>Delivery or batch document</dt><dd>{{ receipt.shipment_ref }}</dd></div>
+      <div><dt>Date received</dt><dd><time datetime="{{ receipt.received_on|date:'Y-m-d' }}">{{ receipt.received_on|date:"Y-m-d" }}</time></dd></div>
+      <div><dt>Quantity received</dt><dd>{{ receipt.quantity_text }} {{ receipt.quantity_unit }}</dd></div>
+      <div><dt>Containers</dt><dd>{{ receipt.containers }} · {{ receipt.container_description }}</dd></div>
+      <div><dt>Examination on receipt</dt><dd>{% if receipt.has_discrepancy %}{% include "includes/status.html" with label=receipt.get_condition_display tone="warning" %}{% else %}{% include "includes/status.html" with label=receipt.get_condition_display tone="success" %}{% endif %}{% if receipt.condition_notes %}<br>{{ receipt.condition_notes|linebreaksbr }}{% endif %}</dd></div>
+    </dl>
+    {% if receipt.has_discrepancy %}<p>A discrepancy does not hold the lot by itself. Place a hold from <a href="{% url 'stability:hold_list' %}">Holds</a> if the lot must not be dispositioned until it is resolved.</p>{% endif %}
+    <h3 class="h6">Receipt history</h3>
+    <ol class="vr-timeline mb-0">
+      {% for entry in receipt_history %}{% include "includes/history_item.html" with title=entry.title at=entry.receipt.recorded_at actor=entry.receipt.recorded_by by="Recorded by" reason=entry.receipt.reason changes=entry.changes %}{% endfor %}
+    </ol>
+    {% else %}
+    <p class="mb-0">Receipt details are not recorded: this lot was received before they were kept.{% if lot.state == 'quarantine' %} An analyst can record them while the lot is in quarantine.{% endif %}</p>
+    {% endif %}
+  </div>
+</section>
 <h2>Samples and results</h2>
 {% for sample in samples %}<section class="card mb-3"><div class="card-body"><h3>{{ sample.reference }}</h3><p>Collected {{ sample.collected_at }} UTC</p>{% if can_record and lot.state == 'quarantine' %}<a href="{% url 'quality:result_new' sample.pk %}">Record result</a>{% endif %}
 <div class="table-responsive"><table class="table"><thead><tr><th>Test</th><th>Result</th><th>Limits</th><th>Analyst</th><th>Review</th></tr></thead><tbody>{% for result in sample.results.all %}<tr><td>{{ result.test_code }}</td><td>{{ result.value }} {{ result.unit }}{% if not result.conforms %} <strong>Out of specification</strong>{% endif %}</td><td>{{ result.lower_limit }}–{{ result.upper_limit }} {{ result.unit }}</td><td>{{ result.analyst }}</td><td>{% if can_review and result.state == 'recorded' and result.analyst_id != request.user.pk %}<a href="{% url 'quality:review' result.pk %}">Review result</a>{% else %}{{ result.state|capfirst }}{% endif %}</td></tr>{% empty %}<tr><td colspan="5">No results recorded.</td></tr>{% endfor %}</tbody></table></div></div></section>{% empty %}<p>No samples recorded.</p>{% endfor %}

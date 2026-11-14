@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block breadcrumbs %}{% include "includes/breadcrumbs.html" with crumbs=crumbs %}{% endblock %}
+{% block page_meta %}<p class="vr-page-meta">{{ supplier.name }}</p>{% endblock %}
+{% block content %}
+<section class="card mb-3" aria-labelledby="supplier-heading">
+  <div class="card-header"><h2 class="card-title" id="supplier-heading">Supplier</h2></div>
+  <div class="card-body">
+    <dl class="vr-facts mb-0">
+      <div><dt>Code</dt><dd><span class="vr-id">{{ supplier.code }}</span></dd></div>
+      <div><dt>Name</dt><dd>{{ supplier.name }}</dd></div>
+      <div><dt>Location</dt><dd>{{ supplier.location }}</dd></div>
+      <div><dt>Qualification</dt><dd>Not recorded in this register</dd></div>
+      <div><dt>Created</dt><dd><time datetime="{{ supplier.created_at|date:'c' }}">{{ supplier.created_at|date:"Y-m-d H:i T" }}</time> by {{ supplier.created_by.get_full_name|default:supplier.created_by.get_username }}</dd></div>
+    </dl>
+  </div>
+</section>
+<section class="card vr-table-card" aria-labelledby="lots-heading">
+  <div class="card-header"><h2 class="card-title" id="lots-heading">Lots received</h2></div>
+  {% if page_obj.paginator.count %}
+  <div class="vr-table-wrap">
+    <table class="table table-hover vr-table" aria-labelledby="lots-heading">
+      <thead><tr><th scope="col">Lot</th><th scope="col">Status</th><th scope="col">Material</th><th scope="col">Supplier lot</th><th scope="col">Manufacturer lot</th><th scope="col">Received</th><th scope="col" class="text-end">Quantity</th></tr></thead>
+      <tbody>
+        {% for receipt in page_obj %}
+        <tr>
+          <th scope="row"><a class="vr-row-link vr-id" href="{% url 'quality:lot_detail' receipt.lot_id %}">{{ receipt.lot.number }}</a></th>
+          <td>{% if receipt.lot.state == 'released' %}{% include "includes/status.html" with label="Released" tone="success" plain=True %}{% elif receipt.lot.state == 'quarantine' %}{% include "includes/status.html" with label="Quarantine" tone="hold" plain=True %}{% else %}{% include "includes/status.html" with label=receipt.lot.state|capfirst tone="neutral" plain=True %}{% endif %}</td>
+          <td class="vr-wrap">{{ receipt.lot.material }}</td>
+          <td>{{ receipt.supplier_lot|default:"Not known" }}</td>
+          <td>{{ receipt.manufacturer_lot|default:"—" }}</td>
+          <td class="vr-nowrap"><time datetime="{{ receipt.received_on|date:'Y-m-d' }}">{{ receipt.received_on|date:"Y-m-d" }}</time></td>
+          <td class="text-end vr-nowrap">{{ receipt.quantity_text }} {{ receipt.quantity_unit }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "catalog/includes/pagination.html" with noun="lots" %}
+  {% else %}
+  {% include "catalog/includes/empty.html" with title="No lots received from this supplier" body="Lots appear here when their current receipt details name this supplier." %}
+  {% endif %}
+</section>
+{% include "catalog/includes/history.html" %}
+{% endblock %}
+{% block record_foot %}{% include "includes/record_foot.html" with identifier=supplier.code %}{% endblock %}

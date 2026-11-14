@@ -62,6 +62,7 @@
           <p class="vr-nav-heading" id="vr-nav-configuration">Configuration</p>
           <ul class="vr-nav-list" aria-labelledby="vr-nav-configuration">
             <li><a class="vr-navlink" href="/catalog/"{% if request.resolver_match.namespace == 'catalog' %} aria-current="page"{% endif %}>{% include "includes/icon.html" with name="file-earmark-text" %}<span data-label="Specifications">Specifications</span></a></li>
+            <li><a class="vr-navlink" href="/suppliers/"{% if request.resolver_match.namespace == 'suppliers' %} aria-current="page"{% endif %}>{% include "includes/icon.html" with name="truck" %}<span data-label="Suppliers">Suppliers</span></a></li>
             <li><a class="vr-navlink" href="/rules/"{% if '/rules/' in request.path %} aria-current="page"{% endif %}>{% include "includes/icon.html" with name="list-check" %}<span data-label="Rule sets">Rule sets</span></a></li>
           </ul>
         </div>

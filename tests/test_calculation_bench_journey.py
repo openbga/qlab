@@ -31,6 +31,7 @@ from laboratory.models import Qualification, ResourceUse
 from quality import services as quality
 from reporting import services as reporting
 from sampling import services as sampling
+from tests.receipts import on_site_receipt
 from tests.test_integrated_journey import PASSWORD, PIN, approve, dispose
 
 pytestmark = pytest.mark.django_db(transaction=True)
@@ -209,6 +210,7 @@ def build_world(django_user_model):
         material=material.name,
         rules=rules,
         reason="Synthetic receipt",
+        receipt=on_site_receipt(),
     )
     return {
         "people": people,

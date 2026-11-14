@@ -19,6 +19,7 @@ from quality.models import Lot, Sample
 from quality.services import receive_lot
 from sampling import services
 from sampling.models import LotAssignment, SamplingPlan, SamplingPlanRevision, SamplingRecord
+from tests.receipts import on_site_receipt
 
 from .test_services import plan_revision
 
@@ -33,6 +34,7 @@ def lot(people):
         material="Synthetic syn-api-001",
         rules=approved_rules(people["author"]),
         reason="Synthetic receipt",
+        receipt=on_site_receipt(),
     )
 
 
@@ -179,6 +181,7 @@ def test_concurrent_duplicate_is_a_form_error(client, people, lot, monkeypatch, 
             material="Synthetic syn-api-001",
             rules=lot.rules,
             reason="Synthetic receipt",
+            receipt=on_site_receipt(),
         )
         user, model = analyst, Sample
         url, data = reverse("sampling:sampling_new", args=[lot.pk]), sampling_data()

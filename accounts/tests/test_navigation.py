@@ -18,6 +18,7 @@ WORKSPACE_PATHS = {
     "/stability/",
     "/laboratory/",
     "/catalog/",
+    "/suppliers/",
     "/rules/",
     "/reports/",
 }

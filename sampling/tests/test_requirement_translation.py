@@ -20,6 +20,7 @@ from catalog.tests.factories import (
 )
 from quality.services import receive_lot
 from sampling import services
+from tests.receipts import on_site_receipt
 
 from .test_services import plan_revision
 
@@ -112,6 +113,7 @@ def lot_with_requirements(people):
         material=mat.name,
         rules=approved_rules(people["author"]),
         reason="Synthetic",
+        receipt=on_site_receipt(),
     )
     services.assign_requirements(
         actor=people["analyst"], lot=lot, material=mat, stage="incoming", reason="Assign"
@@ -174,6 +176,7 @@ def test_unassigned_lot_holds(people):
         material="x",
         rules=approved_rules(people["author"]),
         reason="Synthetic",
+        receipt=on_site_receipt(),
     )
     with pytest.raises(ApplicabilityHold):
         services.test_requirements(lot)

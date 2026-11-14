@@ -16,6 +16,7 @@ from quality.services import add_sample, receive_lot
 from sampling import services
 from sampling.models import DeviationReview, SamplingRecord
 from sampling.services import lot_blockers
+from tests.receipts import on_site_receipt
 
 from .test_services import assign, ready, sample  # noqa: F401
 
@@ -228,6 +229,7 @@ def test_lot_author_ids_cover_every_sample_and_only_this_lot(people, ready):  # 
             material=ready["material"].name,
             rules=ready["rules"],
             reason="Synthetic receipt",
+            receipt=on_site_receipt(),
         ),
     }
     assign(people, other)

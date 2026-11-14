@@ -29,11 +29,19 @@ from core.models import AuditEvent, PINCredential, RuleSet
 from core.services import approve_rule, set_pin
 from quality.models import Lot, Result, Sample
 from quality.services import add_sample, receive_lot, record_result
+from suppliers.models import Supplier
+from suppliers.services import create_supplier
 
 MARKER = "Synthetic seed_demo account; development only."
 LOT_NUMBER = "SYNTHETIC-DEMO-001"
 SAMPLE_REFERENCE = "SYNTHETIC-DEMO-S001"
 DEMO_ROLES = {role: role for role in ROLES} | {"config_author": "quality"}
+# Synthetic suppliers for the register, so a demonstration lot can name where it came from.
+SUPPLIERS = (
+    ("sup-syn-001", "Synthetic Ingredients Supply", "Sampletown, Exampleland"),
+    ("sup-syn-002", "Example Packaging Works", "Testville, Exampleland"),
+)
+SUPPLIER_REASON = "Synthetic demonstration supplier; not a qualified supplier."
 SEGMENTS = ("pharma", "supplement", "food", "chemical", "device")
 ANNOUNCEMENT_TITLE = "Demonstration accounts"
 ANNOUNCEMENT_REASON = "Synthetic demo accounts published by seed_demo --publish-accounts."
@@ -203,6 +211,16 @@ class Command(BaseCommand):
             ).exists()
             if rule.author_id not in known_authors or not seeded:
                 raise CommandError(f"Refusing non-demo rule-set collision: {rule.code}.")
+        for supplier in Supplier.objects.filter(code__in=[code for code, _, _ in SUPPLIERS]):
+            seeded = AuditEvent.objects.filter(
+                object_type="suppliers.supplier",
+                object_id=str(supplier.pk),
+                action="supplier.created",
+                actor_id=supplier.created_by_id,
+                reason=SUPPLIER_REASON,
+            ).exists()
+            if supplier.created_by_id not in known_authors or not seeded:
+                raise CommandError(f"Refusing non-demo supplier collision: {supplier.code}.")
         analyst = existing.get("analyst")
         lot = Lot.objects.filter(number=LOT_NUMBER).first()
         if lot and (analyst is None or lot.created_by_id != analyst.pk):
@@ -260,6 +278,16 @@ class Command(BaseCommand):
                 call_command(
                     "seed_qc_profiles", actor=existing["config_author"].username, stdout=self.stdout
                 )
+                # The register names suppliers; it does not qualify them.
+                for code, name, location in SUPPLIERS:
+                    if not Supplier.objects.filter(code=code).exists():
+                        create_supplier(
+                            actor=existing["config_author"],
+                            code=code,
+                            name=name,
+                            location=location,
+                            reason=SUPPLIER_REASON,
+                        )
             if options["journey"]:
                 self.seed_journey(existing, pin)
             if publish:
@@ -362,6 +390,22 @@ class Command(BaseCommand):
                     material="Synthetic reference powder",
                     rules=rule,
                     reason="Synthetic demo receipt.",
+                    receipt={
+                        "source": "supplier",
+                        "supplier": Supplier.objects.get(code=SUPPLIERS[0][0]),
+                        "supplier_lot": "SYN-SUP-LOT-0001",
+                        "manufacturer": "",
+                        "manufacturer_location": "",
+                        "manufacturer_lot": "",
+                        "shipment_ref": "DN-SYNTHETIC-0001",
+                        "received_on": timezone.localdate(),
+                        "quantity": Decimal("25"),
+                        "quantity_unit": "kg",
+                        "containers": 1,
+                        "container_description": "Synthetic 25 kg fibre drum",
+                        "condition": "acceptable",
+                        "condition_notes": "",
+                    },
                 )
             sample = Sample.objects.filter(reference=SAMPLE_REFERENCE).first()
             if sample is None:
