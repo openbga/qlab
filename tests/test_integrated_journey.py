@@ -23,6 +23,7 @@ from reporting import services as reporting
 from reporting.models import ReportVersion
 from sampling import services as sampling
 from sampling.models import SamplingRecord
+from tests.receipts import on_site_receipt
 
 pytestmark = pytest.mark.django_db(transaction=True)
 PIN = "84621357"
@@ -52,6 +53,9 @@ def integrated(django_user_model, settings):
         "approver": ["quality"],
         "analyst": ["analyst", "quality", "reviewer"],
         "reviewer": ["reviewer"],
+        # Receives the lot, so "analyst" is never barred from disposition as a receipt author
+        # and the sampling and test-data rules are exercised on their own.
+        "receiver": ["analyst"],
     }.items():
         person = django_user_model.objects.create_user(
             username=f"synthetic_{name}",
@@ -170,11 +174,12 @@ def integrated(django_user_model, settings):
         reason="Independent training evidence review",
     )
     lot = quality.receive_lot(
-        actor=people["analyst"],
+        actor=people["receiver"],
         number="SYN-INTEGRATED-001",
         material=material.name,
         rules=rules,
         reason="Synthetic integrated receipt",
+        receipt=on_site_receipt(),
     )
     return {
         "people": people,
@@ -529,9 +534,9 @@ def assert_self_disposition_refused(client, data, person):
     client.force_login(person)
     page = client.get(reverse("quality:disposition", args=[data["lot"].pk]))
     assert page.status_code == 403
-    assert b"own sampling or test data" in page.content
+    assert b"own receipt, sampling or test data" in page.content
     assert b'name="pin"' not in page.content  # Explained before any PIN is requested.
-    with pytest.raises(ValidationError, match="own sampling or test data"):
+    with pytest.raises(ValidationError, match="own receipt, sampling or test data"):
         dispose(data, person)
     data["lot"].refresh_from_db()
     assert data["lot"].state == "quarantine"
@@ -540,17 +545,16 @@ def assert_self_disposition_refused(client, data, person):
     ).exists()
 
 
-def test_sampler_with_quality_role_cannot_sign_disposition(integrated, client):
-    data, people = integrated, integrated["people"]
-    sampler = sampling_author(data, "synthetic_sampler")
+def sampled_by(data, sampler):
+    """Assign the requirements and let ``sampler`` take and record the sample."""
     sampling.assign_requirements(
-        actor=people["analyst"],
+        actor=data["people"]["analyst"],
         lot=data["lot"],
         material=data["material"],
         stage="incoming",
         reason="Assign approved synthetic policy",
     )
-    record = sampling.record_sampling(
+    return sampling.record_sampling(
         actor=sampler,
         lot=data["lot"],
         reference="SYN-INDEPENDENCE-S001",
@@ -562,10 +566,45 @@ def test_sampler_with_quality_role_cannot_sign_disposition(integrated, client):
         quantity_unit="g",
         location="Synthetic sampling booth",
         reason="Synthetic controlled sampling",
-    )
-    reviewed_lot(data, record.sample)
+    ).sample
+
+
+def test_sampler_with_quality_role_cannot_sign_disposition(integrated, client):
+    data, people = integrated, integrated["people"]
+    sampler = sampling_author(data, "synthetic_sampler")
+    reviewed_lot(data, sampled_by(data, sampler))
     assert sampler.pk not in gates.lot_author_ids(data["lot"])  # Not an analytical author.
+    assert sampler.pk not in quality.receipt_author_ids(data["lot"])  # Nor a receipt author.
     assert_self_disposition_refused(client, data, sampler)
+    assert dispose(data, people["approver"]).state == "released"
+
+
+def test_analyst_who_only_tested_cannot_sign_disposition(integrated, client):
+    """Authorship of test data alone bars disposition: others received and sampled the lot."""
+    data, people = integrated, integrated["people"]
+    analyst = people["analyst"]  # Also holds the quality role; that never waives the rule.
+    reviewed_lot(data, sampled_by(data, sampling_author(data, "synthetic_sampler")))
+    assert analyst.pk in gates.lot_author_ids(data["lot"])
+    assert analyst.pk not in sampling.lot_author_ids(data["lot"])
+    assert analyst.pk not in quality.receipt_author_ids(data["lot"])
+    assert_self_disposition_refused(client, data, analyst)
+    assert dispose(data, people["approver"]).state == "released"
+
+
+def test_receipt_corrector_with_quality_role_cannot_sign_disposition(integrated, client):
+    data, people = integrated, integrated["people"]
+    corrector = sampling_author(data, "synthetic_recounter")
+    quality.correct_receipt(
+        actor=corrector,
+        receipt=quality.current_receipt(data["lot"]),
+        reason="Synthetic recount of the delivery",
+        **on_site_receipt(containers=2),
+    )
+    data["lot"].refresh_from_db()
+    reviewed_lot(data, assign_and_sample(data))
+    assert corrector.pk not in gates.lot_author_ids(data["lot"])  # Not an analytical author.
+    assert corrector.pk not in sampling.lot_author_ids(data["lot"])  # Nor a sampling author.
+    assert_self_disposition_refused(client, data, corrector)
     assert dispose(data, people["approver"]).state == "released"
 
 

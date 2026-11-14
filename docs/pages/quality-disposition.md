@@ -3,8 +3,8 @@ title: Sign lot disposition
 urls: quality:disposition
 views: quality.views.sign
 templates: signatures/sign.html, signatures/dialog.html
-models: quality.Lot, quality.Sample, quality.Result, sampling.LotAssignment, sampling.SamplingRecord, analytical.AnalyticalTest, analytical.Observation, analytical.Investigation, stability.Hold, core.ElectronicSignature, core.PINCredential
-reviewed: 2026-11-11
+models: quality.Lot, quality.LotReceipt, quality.Sample, quality.Result, sampling.LotAssignment, sampling.SamplingRecord, analytical.AnalyticalTest, analytical.Observation, analytical.Investigation, stability.Hold, core.ElectronicSignature, core.PINCredential
+reviewed: 2026-11-14
 ---
 
 ## Purpose
@@ -14,7 +14,7 @@ Record the signed QC disposition of a quarantined lot with meaning **approved**,
 ## Who can use it
 
 - Sign-in required. **Quality** role only; others receive 403.
-- Never a user who authored any of the lot's sampling or test data, even with the quality role (see Independence). Such a user sees the reason, a **Return to the lot** link and no signing form (status 403); no PIN is requested.
+- Never a user who authored any of the lot's receipt, sampling or test data, even with the quality role (see Independence). Such a user sees the reason, a **Return to the lot** link and no signing form (status 403); no PIN is requested.
 - Requires an enrolled signature PIN.
 
 ## Layout
@@ -26,7 +26,7 @@ Record the signed QC disposition of a quarantined lot with meaning **approved**,
 
 | Action | Shown when | Who | Result |
 |---|---|---|---|
-| **Sign approved** | You are not an author of the lot's sampling or test data | Quality, independent of the lot's data | Lot becomes Released; "Lot released."; returns to the lot record |
+| **Sign approved** | You are not an author of the lot's receipt, sampling or test data | Quality, independent of the lot's data | Lot becomes Released; "Lot released."; returns to the lot record |
 | **Cancel** / Escape | Always | Any | Returns to the lot record; nothing is signed |
 
 ## Fields
@@ -51,8 +51,10 @@ Record the signed QC disposition of a quarantined lot with meaning **approved**,
 - *Native, no mixed evidence*: foundation manual results on the lot block ("Mixed foundation and native evidence requires reconciliation.").
 - *Native, frozen evidence*: on release the assignment ID and hash and the analytical evidence snapshot are stored on the lot.
 - **Manual foundation path** (development only: DEBUG and neither assignment nor native tests): at least one sample ("The lot requires a sample and reviewed results."); all required rule-set tests per sample ("Required tests are missing."); every result Reviewed and conforming ("All results must conform and have independent review.").
-- **Independence**: "You cannot disposition a lot containing your own sampling or test data." Authors are users who sampled or recorded any sampling record of the lot, including corrected originals and intermediate corrections; recorded observations (including corrected originals), submitted tests, recorded batch QC, opened an investigation, or wrote investigative entries; and, on the manual path, the analysts of the results. Holding several roles never waives this. Writing rules or specifications, assigning requirements or tests, or signing reviews, assessments and conclusions is not authorship. The check is shown when the page opens and repeated under the lot lock when signing.
-- **Stale page**: any new sample, test change or hold since opening changes the lot revision: "Record changed. Reload and review before signing."
+- **Independence**: "You cannot disposition a lot containing your own receipt, sampling or test data." Authors are users who recorded or corrected the lot's receipt details, including the recorder of a record that a correction later replaced; sampled or recorded any sampling record of the lot, including corrected originals and intermediate corrections; recorded observations (including corrected originals), submitted tests, recorded batch QC, opened an investigation, or wrote investigative entries; and, on the manual path, the analysts of the results. Holding several roles never waives this. Writing rules or specifications, assigning requirements or tests, or signing reviews, assessments and conclusions is not authorship. The check is shown when the page opens and repeated under the lot lock when signing.
+- **Receipt authors**: the receipt check applies on both the native and the manual path. The analyst who received the lot through New material lot recorded its receipt details and so cannot sign its disposition. The check reads the receipt records only: a lot received before receipt details were kept has no receipt author until an analyst records them.
+- **Receipt details are not a release condition**: signing does not require receipt details to exist and does not read the examination on receipt. A recorded discrepancy blocks nothing by itself; only an active hold does. Not enforced by this page: whether the supplier named on the receipt is qualified or approved.
+- **Stale page**: any new sample, test change or hold since opening, and receipt details recorded later or corrected, change the lot revision: "Record changed. Reload and review before signing."
 - **Identity and PIN**: "Enter your own signing username and PIN." on a mismatch (audited as `signature.identity_denied`); "Enroll a signature PIN first."; "Signature PIN was not accepted."; 5 consecutive failures lock the PIN for 15 minutes ("Signature PIN is temporarily locked."). Failures are recorded (`signature.denied`) even though the disposition is refused.
 - **Session**: defaults are a 15-minute idle and 8-hour absolute limit; sessions without recorded login times count as expired. On expiry the next request signs you out with "Your session expired. Sign in again to continue." The inline "Session expired. Sign in again before signing." is an extra safeguard at the moment of signing.
 - **Effect**: one transaction sets Released, raises the lot revision by 1, writes `signed.approved` and stores an immutable signature (signer, meaning, server time, bound revision, content hash). There is no reject or reversal path in this version.
@@ -61,4 +63,5 @@ Record the signed QC disposition of a quarantined lot with meaning **approved**,
 
 - Lot record.
 - Lot requirements and sampling; Assess sampling deviation; Lot testing; Holds.
+- Record receipt details; Correct receipt details.
 - [Signature PIN](/signature-pin/)

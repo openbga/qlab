@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block page_intro %}<p class="vr-page-intro">Companies that lots are received from. The register records who a supplier is; it does not qualify a supplier or reduce testing.</p>{% endblock %}
+{% block page_actions %}{% if can_edit %}<a class="btn btn-primary" href="{% url 'suppliers:new' %}">{% include "includes/icon.html" with name="plus-lg" %}New supplier</a>{% endif %}{% endblock %}
+{% block content %}
+<section class="card vr-table-card" aria-labelledby="list-heading">
+  <h2 class="visually-hidden" id="list-heading">Suppliers</h2>
+  {% include "catalog/includes/toolbar.html" with label="Filter suppliers" placeholder="Code, name or location" %}
+  {% if page_obj.paginator.count %}
+  <div class="vr-table-wrap">
+    <table class="table table-hover vr-table" aria-labelledby="list-heading">
+      <thead><tr>{% include "catalog/includes/sort.html" with label="Supplier" key="code" current=sort %}{% include "catalog/includes/sort.html" with label="Name" key="name" current=sort %}<th scope="col">Location</th><th scope="col" class="text-end">Lots received</th><th scope="col">Created</th></tr></thead>
+      <tbody>
+        {% for supplier in page_obj %}
+        <tr>
+          <th scope="row"><a class="vr-row-link vr-id" href="{% url 'suppliers:detail' supplier.pk %}">{{ supplier.code }}</a></th>
+          <td class="vr-wrap">{{ supplier.name }}</td>
+          <td class="vr-wrap">{{ supplier.location }}</td>
+          <td class="text-end">{{ supplier.lot_count }}</td>
+          <td class="vr-nowrap"><time datetime="{{ supplier.created_at|date:'c' }}">{{ supplier.created_at|date:"Y-m-d" }}</time></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "catalog/includes/pagination.html" with noun="suppliers" %}
+  {% elif filtered %}
+  {% include "catalog/includes/empty.html" with kind="no-results" title="No suppliers match these filters" body="Search covers codes, names and locations. Change or clear the filters." clear_url=request.path %}
+  {% else %}
+  {% if can_edit %}{% url 'suppliers:new' as create_url %}{% endif %}
+  {% include "catalog/includes/empty.html" with title="No suppliers yet" body="A lot received from a supplier names one from this register. A quality user adds the first supplier." action_url=create_url action_label="New supplier" %}
+  {% endif %}
+</section>
+{% endblock %}

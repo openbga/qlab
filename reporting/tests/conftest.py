@@ -9,6 +9,7 @@ from core.models import RuleSet
 from core.services import set_pin
 from quality.services import add_sample, dispose_lot, receive_lot, record_result, review_result
 from reporting import evidence
+from tests.receipts import on_site_receipt
 
 PIN = "73519482"
 PASSWORD = "synthetic-test-password-2026"
@@ -74,6 +75,7 @@ def build_lot(people, number="SYN-100", release=True, unit="mg/g", value="99.5",
         material="Synthetic reference powder",
         rules=rules,
         reason="Synthetic receipt",
+        receipt=on_site_receipt(),
     )
     sample = add_sample(
         actor=people["analyst"],

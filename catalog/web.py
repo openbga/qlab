@@ -22,10 +22,11 @@ READ_ROLES = services.READ_ROLES
 CONFLICT = "Another request saved a conflicting record at the same time. Reload and try again."
 
 # (table, unique constraint) pairs that a concurrent request can legitimately take between this
-# request's own uniqueness check and its insert: codes, applicability keys and sample references,
-# which are created without a parent row lock. Versions, specification tests and QC checks are
-# added under a row lock after their check, so a violation there is a fault, as is one on any
-# other table (audit events, signatures, primary keys). Only these become the conflict message.
+# request's own uniqueness check and its insert: codes, applicability keys, lot numbers and
+# sample references, which are created without a parent row lock. Versions, specification tests
+# and QC checks are added under a row lock after their check, so a violation there is a fault,
+# as is one on any other table (audit events, signatures, primary keys). Only these become the
+# conflict message.
 CONCURRENT_DUPLICATES = frozenset(
     {
         ("catalog_material", "catalog_material_code_key"),
@@ -35,6 +36,8 @@ CONCURRENT_DUPLICATES = frozenset(
         ("sampling_samplingplan", "sampling_samplingplan_code_key"),
         ("sampling_samplingplan", "sampling_plan_unique"),
         ("quality_sample", "quality_sample_reference_key"),
+        ("quality_lot", "quality_lot_number_key"),
+        ("suppliers_supplier", "suppliers_supplier_code_key"),
     }
 )
 

@@ -236,6 +236,14 @@ After a failed calibration the equipment is out of service, and its page lists t
 
 The software checks what the analyst selects. It does not know which instrument or lot a method needs, and results recorded before this check existed carry no instrument or lot. Validate these boundaries and failure cases when approving the deployed workflow.
 
+## Suppliers and receipt details
+
+A lot is received with its receipt details, so a lot from a supplier needs that supplier on the register first. A quality user adds suppliers under **Suppliers**; a supplier's identity cannot be edited or removed afterwards, so add a new entry when a name or site changes. The register does not record qualification, and the software does not check a supplier's status at receipt or reduce testing because of it: keep supplier approval under the organization's own procedure.
+
+Receipt details are corrected only while the lot is in quarantine, by a new record that keeps the one it replaces. A discrepancy recorded on receipt does not hold the lot; place a hold when the lot must not be dispositioned until it is resolved. Lots received before this release have no receipt details. An analyst can record them from the delivery documents while the lot is in quarantine; a lot released earlier stays without them.
+
+The demonstration seed adds two synthetic suppliers. On a demonstration with a scheduled reset they appear at the next reset after this release is deployed; until then a quality account adds one.
+
 ## Calculated results
 
 A calculation is approved with the method version: the formula, its named inputs with units, the unit of the result and its decimals. The quality owner who approves the version is approving the formula; verify it against the controlled procedure with worked examples before approval, and again in intended-use validation. The software evaluates the formula exactly as written, carries 50 significant digits and rounds the result half-up to the approved decimals. It does not convert units, apply significant-figure rules or round intermediate values. Changing a formula means a new method version; tests already assigned keep the formula they froze.

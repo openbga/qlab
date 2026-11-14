@@ -77,6 +77,7 @@ These rows cover every existing section from **§211.160 through §211.198**, pl
 | REG-P25 | 211.196: distribution traceability | [eCFR][p196] | 2026-11-10 | M: P manufacturer | Preserve a stable lot-to-distribution/consignee link in ERP; expose investigation traceability without making a laboratory report a shipment authorization. | MVP external link; Later integration |
 | REG-P26 | 211.198(a),(b): complaint review, investigation decision and records | [eCFR][p198] | 2026-11-10 | M: P | Link complaints to product/lot/results; retain findings or reason/responsible person for no investigation; apply complaint-specific retention; route safety-reportability assessment to its owner. | MVP QMS link; Later complaint module |
 | REG-P27 | 211.68(a),(b): authorized computer changes, checked input/output and protected backup | [eCFR][p68] | 2026-11-10 | M: P | Verify imports and calculations; preserve source files/mapping version; restrict configuration changes; maintain exact protected backup and appropriate validation evidence. | MVP |
+| REG-P28 | 211.80(d), 211.82(a),(b): a distinctive code for each lot in each shipment; visual examination on receipt; quarantine until tested or examined and released | [§211.80][p80], [§211.82][p82] | 2026-11-14 | M: P components, containers and closures | Give each received lot of each shipment its own lot record, kept in quarantine until disposition; record that the containers were examined on receipt and what was found. The software records the outcome a person enters; the receiving procedure decides what the examination covers and what follows a discrepancy. | MVP |
 
 ### Electronic records, signatures and FDA data integrity
 
@@ -114,6 +115,7 @@ Part 11 applicability follows the predicate record and intended signature use. I
 | REG-S06 | 111.123(a),(b): QC batch review, disposition and prohibited release | [eCFR][s123] | 2026-11-10 | M: S | Separate testing from QC lot disposition; block release for failed identity/product specifications; preserve reprocessing review and decision. | MVP S disposition gates |
 | REG-S07 | 111.83(a),(b): packaged/labeled lot reserve samples | [eCFR][s83] | 2026-11-10 | M: S | Track lot, protective packaging, twice test quantity and retention: shelf-life date +1 year, or last associated batch distribution +2 years without shelf-life dating. | MVP reserve register/evidence; Later inventory automation |
 | REG-S08 | 111.605(a)-(c): records retention, original/true-copy/electronic records, Part 11 | [eCFR][s605] | 2026-11-10 | M: S | Use shelf life +1 year or last associated batch distribution +2 years; apply Part 11 controls to covered electronic records. | MVP S retention and shared signing |
+| REG-S09 | 111.155(a)-(d): examination of containers and supplier documents on receipt, quarantine, and identification of each lot within each shipment | [eCFR][s155] | 2026-11-14 | M: S components | Record the examination on receipt and identify each received lot so that it traces to the supplier, the date received, the component and its status. Tracing a component lot forward into the supplements made from it stays with the manufacturing or ERP record. | MVP receipt record; Later forward genealogy |
 | REG-F01 | 117.80(a)(2),(5),(6): QC, necessary contamination testing and rejection/treatment | [eCFR][f80] | 2026-11-10 | M: F where applicable | Record hazard/contaminant testing and lot holds/disposition; select tests from the approved facility/product plan. | MVP F test/hold configuration |
 | REG-F02 | 117.165(a),(b): verification, calibration, product testing and conditional environmental monitoring | [eCFR][f165] | 2026-11-10 | M: F subject to applicability | Link analyte, method, lab, lot, sample plan and corrective action; support environmental site/frequency plans when the identified hazard requires them. | MVP F plans/evidence; Later sampling automation |
 | REG-F03 | 117.165(a)(4): PCQI/oversight review and distinct review timeframes | [eCFR][f165] | 2026-11-10 | M: F where applicable | Separate monitoring/corrective-action review deadlines from testing/calibration review; retain justified extensions beyond seven working days for the former. | MVP F review-policy configuration |
@@ -225,6 +227,8 @@ The result-type rows (REG-RT01 to REG-RT07) were researched on 2026-11-12. Curre
 [p22]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-C/part-211/subpart-B/section-211.22
 [p25]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-C/part-211/subpart-B/section-211.25
 [p68]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-C/part-211/subpart-D/section-211.68
+[p80]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-C/part-211/subpart-E/section-211.80
+[p82]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-C/part-211/subpart-E/section-211.82
 [p84]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-C/part-211/subpart-E/section-211.84
 [p160]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-C/part-211/subpart-I/section-211.160
 [p165]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-C/part-211/subpart-I/section-211.165
@@ -259,6 +263,7 @@ The result-type rows (REG-RT01 to REG-RT07) were researched on 2026-11-12. Curre
 [s75]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-E/section-111.75
 [s83]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-E/section-111.83
 [s123]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-F/section-111.123
+[s155]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-G/section-111.155
 [s315]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-J/section-111.315
 [s320]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-J/section-111.320
 [s325]: https://www.ecfr.gov/current/title-21/chapter-I/subchapter-B/part-111/subpart-J/section-111.325

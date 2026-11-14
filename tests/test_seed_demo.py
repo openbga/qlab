@@ -2,6 +2,7 @@ from io import StringIO
 
 import pytest
 from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.core.management.base import CommandError
 
@@ -9,7 +10,10 @@ from catalog.models import Material, MethodRevision, SpecificationRevision
 from catalog.services import create_material
 from core.models import AuditEvent, ElectronicSignature, PINCredential, RuleSet
 from quality.models import Lot, Result, Sample
+from quality.services import current_receipt
 from sampling.models import SamplingPlanRevision
+from suppliers.models import Supplier
+from suppliers.services import create_supplier
 
 pytestmark = pytest.mark.django_db(transaction=True)
 PASSWORD = "Synthetic-seed-password-2026!"
@@ -52,6 +56,13 @@ def test_demo_uses_services_and_is_idempotent(demo_env, django_user_model, monke
     assert signature.meaning == "approved" and signature.audit_event_id
     assert Result.objects.get().state == "recorded"
     assert Lot.objects.get().state == "quarantine"
+    # The register names two synthetic suppliers, and the journey's lot came from the first.
+    assert list(Supplier.objects.values_list("code", "created_by__username")) == [
+        ("sup-syn-001", "demo_config_author"),
+        ("sup-syn-002", "demo_config_author"),
+    ]
+    receipt = current_receipt(Lot.objects.get())
+    assert (receipt.supplier.code, receipt.recorded_by.username) == ("sup-syn-001", "demo_analyst")
     quality_user = django_user_model.objects.get(username="demo_quality")
     unrelated = create_material(
         actor=quality_user,
@@ -78,8 +89,28 @@ def test_demo_uses_services_and_is_idempotent(demo_env, django_user_model, monke
         SamplingPlanRevision.objects.count(),
     )
     assert (Lot.objects.count(), Sample.objects.count(), Result.objects.count()) == (1, 1, 1)
+    assert Supplier.objects.count() == 2 and Lot.objects.get().receipts.count() == 1
     for user in django_user_model.objects.filter(username__startswith="demo_"):
         assert hashes[user.pk] == (user.password, PINCredential.objects.get(user=user).encoded)
+
+
+def test_demo_refuses_a_supplier_it_did_not_seed(demo_env, django_user_model):
+    # A laboratory's own supplier under a seed code is never adopted or overwritten.
+    owner = django_user_model.objects.create_user("lab_quality", password=PASSWORD)
+    owner.groups.add(Group.objects.get_or_create(name="quality")[0])
+    own = create_supplier(
+        actor=owner,
+        code="sup-syn-001",
+        name="Unrelated synthetic supplier",
+        location="Elsewhere, Exampleland",
+        reason="Existing unrelated configuration",
+    )
+    before = AuditEvent.objects.count()
+    with pytest.raises(CommandError, match="non-demo supplier collision: sup-syn-001"):
+        call_command("seed_demo", actor=demo_env.username, stdout=StringIO(), stderr=StringIO())
+    assert list(Supplier.objects.values_list("pk", "name")) == [(own.pk, own.name)]
+    assert AuditEvent.objects.count() == before
+    assert not django_user_model.objects.filter(username__startswith="demo_").exists()
 
 
 def test_demo_refuses_production_and_non_demo_accounts(demo_env, settings, django_user_model):

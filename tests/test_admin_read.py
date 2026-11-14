@@ -15,6 +15,7 @@ from core.models import AuditEvent, AuditReview, ElectronicSignature, RuleSet
 from core.services import approve_rule, review_audit, save_rule, set_pin
 from quality.models import Lot, Result, Sample
 from quality.services import add_sample, dispose_lot, receive_lot, record_result, review_result
+from tests.receipts import on_site_receipt
 
 pytestmark = pytest.mark.django_db(transaction=True)
 PIN = "83529174"
@@ -30,6 +31,8 @@ def records(django_user_model, settings):
         "author": ["quality"],
         "approver": ["quality", "reviewer"],
         "analyst": ["analyst"],
+        # Receives the lot, so "analyst" authors its test data only.
+        "receiver": ["analyst"],
     }.items():
         user = django_user_model.objects.create_user(name, password=PASSWORD)
         user.groups.add(*[Group.objects.get_or_create(name=r)[0] for r in roles])
@@ -57,11 +60,12 @@ def records(django_user_model, settings):
     )
     draft = save_rule(actor=people["author"], **{**fields, "code": "synthetic-draft"})
     lot = receive_lot(
-        actor=people["analyst"],
+        actor=people["receiver"],
         number="SYN-ADMIN-001",
         material="Synthetic powder",
         rules=approved,
         reason="Synthetic receipt",
+        receipt=on_site_receipt(),
     )
     sample = add_sample(
         actor=people["analyst"],

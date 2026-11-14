@@ -6,6 +6,7 @@ All notable changes to OpenBGA Fresh CoA LIMS are recorded here. The format foll
 
 ### Changed
 
+- Whoever recorded or corrected a lot's receipt details can no longer sign that lot's QC disposition. The **Number** field of the new-lot form is now **Lot number**.
 - `ANALYTICAL_BENCH` replaces `ANALYTICAL_ELIGIBILITY_CHECK`. A deployment that overrides the old setting must name a bench class instead; without one, results are held.
 - Adopted the OpenBGA Fresh CoA LIMS name and certificate-and-leaf mark across the application, presentation and newly issued certificates.
 - Moved the source repository and presentation to the `fresh-coa-lims` slug, with the hosted demo at `fresh-coa-lims.onrender.com`.
@@ -13,6 +14,7 @@ All notable changes to OpenBGA Fresh CoA LIMS are recorded here. The format foll
 
 ### Added
 
+- Receipt details and a supplier register: a lot is received together with where it came from (a supplier from the register, or made on site), the supplier's and manufacturer's lot numbers, the delivery document, the date, the quantity, the containers and what the examination on receipt found. Details are never edited; a correction adds a linked record with its reason while the lot is in quarantine. Quality keeps the register, which records identity only and does not qualify a supplier. The lot list shows the supplier and searches supplier and manufacturer lot numbers. Lots received earlier have no receipt details until an analyst records them.
 - Calculated results: a method version can define one formula over named inputs with units, approved and frozen with the version. The analyst enters the inputs, the system calculates the value, and the result keeps the inputs, the formula and the method version. Submission and review calculate again.
 - Equipment and reagent checks at result entry: recording or correcting a result or a batch QC check names the instruments and the reagent or standard lots used. An entry is refused when an instrument is out of service or out of calibration, a lot is not released or expired, or the analyst has no current qualification for the method, which now applies to batch QC as well. A method version can require an instrument, a lot or both. After a failed calibration the equipment page lists the tests and QC batches that used the equipment.
 - Raw-data files: a file can be attached to a test, is stored with its SHA-256 checksum, never changes and is returned unchanged on download. `RAW_DATA_MAX_BYTES` sets the largest accepted file and `RAW_DATA_TOTAL_MAX_BYTES` an optional ceiling for all files together. A larger file is refused in the browser before it is sent, and the server answers an oversized upload with status 413 without reading it.

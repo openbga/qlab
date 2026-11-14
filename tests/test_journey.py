@@ -11,6 +11,7 @@ from core.models import AuditEvent, ElectronicSignature, RuleSet
 from core.services import set_pin
 from quality.models import Result
 from quality.services import add_sample, dispose_lot, receive_lot, record_result, review_result
+from tests.receipts import on_site_receipt
 
 pytestmark = pytest.mark.django_db(transaction=True)
 PIN = "12345678"
@@ -26,6 +27,10 @@ def journey(django_user_model, settings):
         user.groups.add(Group.objects.get_or_create(name=role)[0])
         set_pin(actor=user, pin=PIN, password="test-password-2026")
         people[role] = user
+    # Someone else receives the lot, so the analyst below authors its test data only and each
+    # independence rule is exercised on its own.
+    receiver = django_user_model.objects.create_user("receiver", password="test-password-2026")
+    receiver.groups.add(Group.objects.get(name="analyst"))
     rules = RuleSet.objects.create(
         code="synthetic",
         segment="chemical",
@@ -40,11 +45,12 @@ def journey(django_user_model, settings):
         },
     )
     lot = receive_lot(
-        actor=people["analyst"],
+        actor=receiver,
         number="SYN-001",
         material="Synthetic powder",
         rules=rules,
         reason="Synthetic receipt",
+        receipt=on_site_receipt(),
     )
     sample = add_sample(
         actor=people["analyst"],
@@ -109,7 +115,7 @@ def test_self_review_and_self_disposition_forbidden(journey):
         actor=people["reviewer"], pin=PIN, result=result, expected_revision=1, reason="Checked"
     )
     lot.refresh_from_db()
-    with pytest.raises(ValidationError, match="own sampling or test data"):
+    with pytest.raises(ValidationError, match="own receipt, sampling or test data"):
         dispose_lot(actor=actor, pin=PIN, lot=lot, expected_revision=lot.revision, reason="Check")
     assert ElectronicSignature.objects.filter(object_type="quality.lot").count() == 0
 

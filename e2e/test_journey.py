@@ -51,9 +51,19 @@ def test_lot_to_signed_disposition(live_server, settings, artifacts):
 
         login("analyst")
         page.locator(".vr-page-actions").get_by_role("link", name="New material lot").click()
-        page.get_by_label(re.compile(r"^Number\b")).fill("SYNTHETIC-BROWSER-001")
+        page.get_by_label(re.compile(r"^Lot number\b")).fill("SYNTHETIC-BROWSER-001")
         page.get_by_label(re.compile(r"^Material\b")).fill("Synthetic calibration material")
-        page.get_by_label(re.compile(r"^Rules\b")).select_option(label="browser-synthetic v1")
+        page.get_by_label(re.compile(r"^Rule set\b")).select_option(label="browser-synthetic v1")
+        # Receipt details are part of receiving a lot; the date received defaults to today.
+        page.get_by_label(re.compile(r"^Source\b")).select_option(label="Made on site")
+        page.get_by_label(re.compile(r"^Delivery or batch document\b")).fill("BR-SYNTHETIC-001")
+        page.get_by_label(re.compile(r"^Quantity received\b")).fill("5")
+        page.get_by_label(re.compile(r"^Quantity unit\b")).select_option(label="kg")
+        page.get_by_label(re.compile(r"^Number of containers\b")).fill("1")
+        page.get_by_label(re.compile(r"^Containers\b")).fill("Synthetic 5 kg jar")
+        page.get_by_label(re.compile(r"^Examination on receipt\b")).select_option(
+            label="No discrepancy found"
+        )
         page.get_by_label(re.compile(r"^Reason\b")).fill("Synthetic receipt")
         page.get_by_role("button", name="Receive lot", exact=True).click()
         page.get_by_role("link", name="Add sample").click()

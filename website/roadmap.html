@@ -47,7 +47,7 @@
               <li><a href="#later">Later</a></li>
               <li><a href="#outside">Outside the current plan</a></li>
             </ul>
-            <p class="qual-demo-note">Last updated <time datetime="2026-11-12">12 November 2026</time>. To propose a change, <a href="https://github.com/openbga/fresh-coa-lims/issues">open an issue on GitHub</a>.</p>
+            <p class="qual-demo-note">Last updated <time datetime="2026-11-14">14 November 2026</time>. To propose a change, <a href="https://github.com/openbga/fresh-coa-lims/issues">open an issue on GitHub</a>.</p>
           </div>
           <div class="col-lg-5">
             <aside class="qual-record" aria-labelledby="reading-heading">
@@ -74,7 +74,7 @@
         <div class="col-lg-8">
           <ul class="qual-areas">
             <li id="configuration"><h3>Approved configuration</h3><p>Rule sets, specifications, methods and sampling plans are versioned and effective-dated. Someone other than the author signs each approval. Every lot keeps a snapshot of the revisions it was tested against.</p></li>
-            <li id="receipt-sampling"><h3>Lot receipt and sampling</h3><p>Lots are received into quarantine and assigned their specifications and sampling plan. Sampling records show which containers were sampled, where, when and by whom, with deviations assessed.</p></li>
+            <li id="receipt-sampling"><h3>Lot receipt and sampling</h3><p>Lots are received into quarantine with their receipt details: the supplier, from a register kept by quality, or that the material was made on site; the supplier's and the manufacturer's lot numbers; the delivery document, date, quantity and containers; and what the examination on receipt found. A correction adds a record and keeps the original. The register records who a supplier is and does not qualify it. Lots are then assigned their specifications and sampling plan. Sampling records show which containers were sampled, where, when and by whom, with deviations assessed.</p></li>
             <li id="testing"><h3>Testing</h3><p>Numeric results and counts with units, replicates, declared rounding and batch QC checks. Qualitative results (conforms or does not conform, present or absent) are recorded with what was observed. A result reported as less than a value is kept as recorded and never becomes zero. Limits can include or exclude their boundary. A result can be calculated from raw measurements, such as weights, volumes and factors, with a formula approved with the method version; the record keeps the inputs and the formula used. Raw-data files are attached to a test and stored with a checksum. A correction adds an entry and keeps the original.</p></li>
             <li id="investigations"><h3>Out-of-specification investigations</h3><p>A failing result opens a hold and an investigation. Retests and resamples need authorization and stay linked to the original result. An independent signed conclusion closes the investigation.</p></li>
             <li id="review-disposition"><h3>Review and QC disposition</h3><p>A reviewer who did not record the results signs the review. Quality signs the disposition, which is blocked while tests are missing or failing or while investigations or holds are open.</p></li>
@@ -101,9 +101,8 @@
             <ol class="qual-workflow">
               <li id="external-results">
                 <h3>Supplier and contract-laboratory results</h3>
-                <p>Many laboratories take part of a lot's evidence from a supplier's certificate or from an outside laboratory. That reliance has conditions, and the record has to show they were met.</p>
+                <p>Many laboratories take part of a lot's evidence from a supplier's certificate or from an outside laboratory. That reliance has conditions, and the record has to show they were met. Each lot already names its supplier and its delivery.</p>
                 <ul>
-                  <li>Supplier, manufacturer lot, shipment and container details on each received lot.</li>
                   <li>Results taken from a supplier's certificate, recorded against the specification and kept apart from the laboratory's own tests.</li>
                   <li>A supplier qualification status that controls reduced testing. Identity testing stays required where the rules say so.</li>
                   <li>Results from contract laboratories, with the evidence that the laboratory is approved for the test.</li>

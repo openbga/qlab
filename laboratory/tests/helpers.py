@@ -7,6 +7,7 @@ from django.utils import timezone
 from core.models import RuleSet
 from laboratory import services
 from quality.services import add_sample, receive_lot
+from tests.receipts import on_site_receipt
 
 PIN = "82519374"
 PASSWORD = "synthetic-test-password-847"
@@ -208,6 +209,7 @@ def make_lot(people, number="SYN-LOT-1"):
         material="Synthetic powder",
         rules=make_rules(people, f"rules-{number}"),
         reason="Synthetic receipt",
+        receipt=on_site_receipt(),
     )
 
 
