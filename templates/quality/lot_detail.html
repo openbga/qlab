@@ -26,7 +26,7 @@
       <div><dt>Examination on receipt</dt><dd>{% if receipt.has_discrepancy %}{% include "includes/status.html" with label=receipt.get_condition_display tone="warning" %}{% else %}{% include "includes/status.html" with label=receipt.get_condition_display tone="success" %}{% endif %}{% if receipt.condition_notes %}<br>{{ receipt.condition_notes|linebreaksbr }}{% endif %}</dd></div>
     </dl>
     {% if receipt.has_discrepancy %}<p>A discrepancy does not hold the lot by itself. Place a hold from <a href="{% url 'stability:hold_list' %}">Holds</a> if the lot must not be dispositioned until it is resolved.</p>{% endif %}
-    <h3 class="h6">Receipt history</h3>
+    <h3 class="h6 mt-3">Receipt history</h3>
     <ol class="vr-timeline mb-0">
       {% for entry in receipt_history %}{% include "includes/history_item.html" with title=entry.title at=entry.receipt.recorded_at actor=entry.receipt.recorded_by by="Recorded by" reason=entry.receipt.reason changes=entry.changes %}{% endfor %}
     </ol>
